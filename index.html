@@ -1,0 +1,100 @@
+// This component can be used inside a React project
+import { useState } from "react";
+
+export default function FoodCostPredictor() {
+  const [income, setIncome] = useState(0);
+  const [familySize, setFamilySize] = useState(1);
+  const [prediction, setPrediction] = useState(null);
+  const [history, setHistory] = useState([]);
+
+  const handlePredict = () => {
+    if (!income || !familySize || income <= 0 || familySize <= 0) {
+      setPrediction("⚠️ Please enter valid positive numbers for both fields.");
+      return;
+    }
+
+    const incomePerPerson = income / familySize;
+    const foodIncomeRatio = 0;
+
+    const coef = {
+      income: 0.196160,
+      familySize: -0.157024,
+      incomePerPerson: -0.030352,
+      foodIncomeRatio: 38.864350
+    };
+    const intercept = -6.660743;
+
+    const foodCost =
+      coef.income * income +
+      coef.familySize * familySize +
+      coef.incomePerPerson * incomePerPerson +
+      coef.foodIncomeRatio * foodIncomeRatio +
+      intercept;
+
+    const rounded = foodCost.toFixed(2);
+    setPrediction(`Estimated Monthly Food Cost: RM ${rounded}`);
+
+    const newEntry = `Income: RM ${income}, Family Size: ${familySize} → RM ${rounded}`;
+    setHistory([newEntry, ...history]);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-green-100 flex items-center justify-center p-4">
+      <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-md">
+        <h2 className="text-xl font-semibold text-center text-green-700 mb-4">
+          🌾 Smart Food Cost Predictor
+        </h2>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block font-medium text-gray-700 mb-1">Household Income (RM)</label>
+            <input
+              type="number"
+              value={income}
+              onChange={(e) => setIncome(Number(e.target.value))}
+              min="1"
+              className="w-full border border-gray-300 p-2 rounded"
+              placeholder="e.g. 4000"
+            />
+          </div>
+
+          <div>
+            <label className="block font-medium text-gray-700 mb-1">Family Size</label>
+            <input
+              type="number"
+              value={familySize}
+              onChange={(e) => setFamilySize(Number(e.target.value))}
+              min="1"
+              className="w-full border border-gray-300 p-2 rounded"
+              placeholder="e.g. 4"
+            />
+          </div>
+
+          <button
+            onClick={handlePredict}
+            className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
+          >
+            Predict
+          </button>
+
+          {prediction && (
+            <div className="text-center text-green-800 font-semibold mt-4">
+              {prediction}
+            </div>
+          )}
+
+          {history.length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-sm font-medium text-gray-700 mb-2">Prediction History:</h3>
+              <ul className="text-sm text-gray-600 space-y-1">
+                {history.map((item, idx) => (
+                  <li key={idx}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
