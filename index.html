@@ -1,100 +1,130 @@
-// This component can be used inside a React project
-import { useState } from "react";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart Food Cost Predictor</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom right, #fefce8, #ecfccb);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+    h2 {
+      text-align: center;
+      color: #047857;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: 600;
+      color: #374151;
+    }
+    input {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.25rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.375rem;
+    }
+    button {
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 1.5rem;
+      background-color: #059669;
+      color: white;
+      font-weight: bold;
+      border: none;
+      border-radius: 0.375rem;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #047857;
+    }
+    .result {
+      margin-top: 1rem;
+      text-align: center;
+      font-weight: bold;
+      color: #166534;
+    }
+    .history {
+      margin-top: 1.5rem;
+      font-size: 0.9rem;
+      color: #4b5563;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🌾 Smart Food Cost Predictor</h2>
+    <label for="income">Household Income (RM)</label>
+    <input type="number" id="income" placeholder="e.g. 4000" min="1" />
 
-export default function FoodCostPredictor() {
-  const [income, setIncome] = useState(0);
-  const [familySize, setFamilySize] = useState(1);
-  const [prediction, setPrediction] = useState(null);
-  const [history, setHistory] = useState([]);
+    <label for="familySize">Family Size</label>
+    <input type="number" id="familySize" placeholder="e.g. 4" min="1" />
 
-  const handlePredict = () => {
-    if (!income || !familySize || income <= 0 || familySize <= 0) {
-      setPrediction("⚠️ Please enter valid positive numbers for both fields.");
-      return;
+    <button onclick="predictFoodCost()">Predict</button>
+
+    <div class="result" id="result"></div>
+    <div class="history" id="history"></div>
+  </div>
+
+  <script>
+    const historyList = [];
+
+    function predictFoodCost() {
+      const income = parseFloat(document.getElementById('income').value);
+      const familySize = parseInt(document.getElementById('familySize').value);
+
+      if (!income || !familySize || income <= 0 || familySize <= 0) {
+        document.getElementById('result').textContent = "⚠️ Please enter valid positive numbers.";
+        return;
+      }
+
+      const incomePerPerson = income / familySize;
+      const foodIncomeRatio = 0;
+
+      const coef = {
+        income: 0.196160,
+        familySize: -0.157024,
+        incomePerPerson: -0.030352,
+        foodIncomeRatio: 38.864350
+      };
+      const intercept = -6.660743;
+
+      const foodCost =
+        coef.income * income +
+        coef.familySize * familySize +
+        coef.incomePerPerson * incomePerPerson +
+        coef.foodIncomeRatio * foodIncomeRatio +
+        intercept;
+
+      const rounded = foodCost.toFixed(2);
+      document.getElementById('result').textContent = `Estimated Monthly Food Cost: RM ${rounded}`;
+
+      const entry = `Income: RM ${income}, Family Size: ${familySize} → RM ${rounded}`;
+      historyList.unshift(entry);
+      updateHistory();
     }
 
-    const incomePerPerson = income / familySize;
-    const foodIncomeRatio = 0;
+    function updateHistory() {
+      const historyDiv = document.getElementById('history');
+      historyDiv.innerHTML = "<strong>Prediction History:</strong><br>" +
+        historyList.map(item => `<div>${item}</div>`).join('');
+    }
+  </script>
+</body>
+</html>
 
-    const coef = {
-      income: 0.196160,
-      familySize: -0.157024,
-      incomePerPerson: -0.030352,
-      foodIncomeRatio: 38.864350
-    };
-    const intercept = -6.660743;
-
-    const foodCost =
-      coef.income * income +
-      coef.familySize * familySize +
-      coef.incomePerPerson * incomePerPerson +
-      coef.foodIncomeRatio * foodIncomeRatio +
-      intercept;
-
-    const rounded = foodCost.toFixed(2);
-    setPrediction(`Estimated Monthly Food Cost: RM ${rounded}`);
-
-    const newEntry = `Income: RM ${income}, Family Size: ${familySize} → RM ${rounded}`;
-    setHistory([newEntry, ...history]);
-  };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-green-100 flex items-center justify-center p-4">
-      <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-md">
-        <h2 className="text-xl font-semibold text-center text-green-700 mb-4">
-          🌾 Smart Food Cost Predictor
-        </h2>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block font-medium text-gray-700 mb-1">Household Income (RM)</label>
-            <input
-              type="number"
-              value={income}
-              onChange={(e) => setIncome(Number(e.target.value))}
-              min="1"
-              className="w-full border border-gray-300 p-2 rounded"
-              placeholder="e.g. 4000"
-            />
-          </div>
-
-          <div>
-            <label className="block font-medium text-gray-700 mb-1">Family Size</label>
-            <input
-              type="number"
-              value={familySize}
-              onChange={(e) => setFamilySize(Number(e.target.value))}
-              min="1"
-              className="w-full border border-gray-300 p-2 rounded"
-              placeholder="e.g. 4"
-            />
-          </div>
-
-          <button
-            onClick={handlePredict}
-            className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
-          >
-            Predict
-          </button>
-
-          {prediction && (
-            <div className="text-center text-green-800 font-semibold mt-4">
-              {prediction}
-            </div>
-          )}
-
-          {history.length > 0 && (
-            <div className="mt-6">
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Prediction History:</h3>
-              <ul className="text-sm text-gray-600 space-y-1">
-                {history.map((item, idx) => (
-                  <li key={idx}>{item}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
